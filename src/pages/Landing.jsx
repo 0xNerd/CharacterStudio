@@ -48,7 +48,7 @@ function Landing() {
         <button className={styles.button} onClick={createCharacter}>
           <img src="./assets/media/btn_create_character.png" />
         </button>
-        <button className={styles.button} onClick={createVRMCharacter}>
+        {/*<button className={styles.button} onClick={createVRMCharacter}>
           <img src="./assets/media/btn_batch_download_character.png" />
         </button>
         <button className={styles.button} onClick={optimizeCharacter}>

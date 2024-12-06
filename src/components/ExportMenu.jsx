@@ -1,10 +1,8 @@
 import React, { useContext } from "react"
 import { SceneContext } from "../context/SceneContext"
 import CustomButton from "./custom-button"
-
 import { getAtlasSize } from "../library/utils"
-
-import styles from "./ExportMenu.module.css"
+import stylesX from "../pages/Save.module.css"
 import { local } from "../library/store"
 import { LanguageContext } from "../context/LanguageContext"
 
@@ -15,6 +13,8 @@ export const ExportMenu = () => {
   const { t } = useContext(LanguageContext);
   const [name] = React.useState(localStorage.getItem("name") || defaultName)
   const { model, characterManager } = useContext(SceneContext)
+
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const getOptions = () =>{
     const currentOption = local["mergeOptions_sel_option"] || 0;
@@ -32,14 +32,25 @@ export const ExportMenu = () => {
     }
   }
 
-  const downloadVRM = (version) =>{
+  const downloadVRM = async (version) =>{
     const options = getOptions();
     /**
      * Blindly assume the whole avatar is VRM0 if the first vrm is VRM0
      */
     options.isVrm0 = Object.values(characterManager.avatar)[0].vrm.meta.metaVersion=='0'
     options.outputVRM0 = !(version === 1)
-    characterManager.downloadVRM(name, options);
+    
+    // Start the download process
+    setIsDownloading(true);
+
+    try {
+      await characterManager.uploadVRM(name, options);
+    } catch (error) {
+      console.error("Error uploading VRM:", error);
+    } finally {
+      // End the download process
+      setIsDownloading(false);
+    }
   }
   
   const downloadGLB = () =>{
@@ -49,7 +60,7 @@ export const ExportMenu = () => {
 
   return (
     <React.Fragment>
-      <CustomButton
+      {/*<CustomButton
         theme="light"
         text="GLB"
         icon="download"
@@ -58,14 +69,15 @@ export const ExportMenu = () => {
         onClick={() => {
           downloadGLB()
         }}
-      />
-        <CustomButton
+      />*/}
+      <CustomButton
         theme="light"
-        text="VRM 0"
+        text="Save"
         icon="download"
         size={14}
-        className={styles.button}
+        className={stylesX.buttonRight}
         onClick={()=>downloadVRM(0)}
+        disabled={isDownloading}
       />
     </React.Fragment>
   )

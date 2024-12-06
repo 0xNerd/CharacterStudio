@@ -6,13 +6,14 @@ import { BlinkManager } from "./blinkManager";
 import { EmotionManager } from "./EmotionManager";
 import { VRMLoaderPlugin, VRMSpringBoneCollider } from "@pixiv/three-vrm";
 import { getAsArray, disposeVRM, renameVRMBones, addModelData } from "./utils";
-import { downloadGLB, downloadVRMWithAvatar } from "../library/download-utils"
+import { downloadGLB, downloadVRMWithAvatar, blobVRMWithAvatar } from "../library/download-utils"
 import { getNodesWithColliders, saveVRMCollidersToUserData, renameMorphTargets} from "./load-utils";
 import { cullHiddenMeshes, setTextureToChildMeshes, addChildAtFirst } from "./utils";
 import { LipSync } from "./lipsync";
 import { LookAtManager } from "./lookatManager";
 import OverlayedTextureManager from "./OverlayTextureManager";
 import { CharacterManifestData } from "./CharacterManifestData";
+import axios from "axios"
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 const localVector3 = new THREE.Vector3(); 
@@ -284,6 +285,40 @@ export class CharacterManager {
           }
         } else {
           // Download not supported, log an error and reject the Promise
+          const errorMessage = "Download not supported.";
+          console.error(errorMessage);
+          reject(new Error(errorMessage));
+        }
+      });
+    }
+    // Inside the iframe (sending the sign message request)
+    uploadVRM(name, exportOptions = null) {
+      return new Promise(async (resolve, reject) => {
+        if (this.canDownload()) {
+          try {
+            
+            // Set default export options if not provided
+            exportOptions = exportOptions || {};
+            const manifestOptions = this.manifestData.getExportOptions();
+            const finalOptions = { ...manifestOptions, ...exportOptions };
+            finalOptions.screenshot = this._getPortaitScreenshotTexture(false, finalOptions);
+
+            // Call the downloadVRMWithAvatar function with the required parameters
+            const vrmBlob = await blobVRMWithAvatar(this.characterModel, this.avatar, name, finalOptions);
+            const file = new File([vrmBlob], `${name}.vrm`, { type: "application/octet-stream" });
+            console.log('sending file to parent', file)
+            // Send the file to the parent for uploading
+            const parentOrigin = window.parent.location.origin;
+            window.parent.postMessage({
+              type: 'uploadVRM',
+              data: { file }
+            }, parentOrigin);
+          
+          } catch (error) {
+            console.error("Error processing VRM:", error.message);
+            reject(new Error("Failed to process VRM."));
+          }
+        } else {
           const errorMessage = "Download not supported.";
           console.error(errorMessage);
           reject(new Error(errorMessage));

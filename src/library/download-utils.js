@@ -133,6 +133,20 @@ export function downloadVRMWithAvatar(model, avatar, fileName, options){
   });
 }
 
+export function blobVRMWithAvatar(model, avatar, fileName, options) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const vrm = await getVRMData(model, avatar, options);
+
+      // Resolve with the VRM Blob
+      resolve(vrm);
+    } catch (error) {
+      console.error("Error generating VRM data:", error);
+      reject(new Error("Failed to generate VRM data."));
+    }
+  });
+}
+
 async function getVRMData(model, avatar, options){
   const vrmModel = await getOptimizedGLB(model,avatar, options);
   return parseVRM(vrmModel,avatar,options) 

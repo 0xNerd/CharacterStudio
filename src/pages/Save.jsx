@@ -54,13 +54,13 @@ function Save() {
         />
         <ExportMenu />
         
-        <CustomButton
+        {/*<CustomButton
             theme="light"
             text="mint"//{t('callToAction.mint')}
             size={14}
             className={styles.buttonRight}
             onClick={mint}
-        />
+        />*/}
       </div>
     </div>
   )
