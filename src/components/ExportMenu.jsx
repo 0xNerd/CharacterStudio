@@ -14,8 +14,6 @@ export const ExportMenu = () => {
   const [name] = React.useState(localStorage.getItem("name") || defaultName)
   const { model, characterManager } = useContext(SceneContext)
 
-  const [isDownloading, setIsDownloading] = useState(false);
-
   const getOptions = () =>{
     const currentOption = local["mergeOptions_sel_option"] || 0;
     const createTextureAtlas = local["mergeOptions_create_atlas"] == null ? true:local["mergeOptions_create_atlas"] 
@@ -32,25 +30,14 @@ export const ExportMenu = () => {
     }
   }
 
-  const downloadVRM = async (version) =>{
+  const downloadVRM = (version) =>{
     const options = getOptions();
     /**
      * Blindly assume the whole avatar is VRM0 if the first vrm is VRM0
      */
     options.isVrm0 = Object.values(characterManager.avatar)[0].vrm.meta.metaVersion=='0'
     options.outputVRM0 = !(version === 1)
-    
-    // Start the download process
-    setIsDownloading(true);
-
-    try {
-      await characterManager.uploadVRM(name, options);
-    } catch (error) {
-      console.error("Error uploading VRM:", error);
-    } finally {
-      // End the download process
-      setIsDownloading(false);
-    }
+    characterManager.uploadVRM(name, options);
   }
   
   const downloadGLB = () =>{
@@ -77,7 +64,6 @@ export const ExportMenu = () => {
         size={14}
         className={stylesX.buttonRight}
         onClick={()=>downloadVRM(0)}
-        disabled={isDownloading}
       />
     </React.Fragment>
   )
