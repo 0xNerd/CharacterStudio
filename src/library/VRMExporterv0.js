@@ -3,7 +3,7 @@ import { VRMExpressionPresetName } from "@pixiv/three-vrm";
 import { encodeToKTX2 } from 'ktx2-encoder';
 import { KtxDecoder } from "./ktx";
 import { KTXTools } from "./ktxtools";
-
+import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -862,7 +862,7 @@ export default class VRMExporterv0 {
 function fillVRMMissingMetaData(vrmMeta) {
     vrmMeta.title = vrmMeta.title || "Character";
     vrmMeta.version = vrmMeta.version || "1";
-    vrmMeta.author = vrmMeta.author || "Anon";
+    vrmMeta.author = vrmMeta.author || `${uuidv4()}`;
     vrmMeta.contactInformation = vrmMeta.contactInformation || "";
     vrmMeta.reference = vrmMeta.reference || "";
     vrmMeta.allowedUserName = vrmMeta.allowedUserName || "Everyone";

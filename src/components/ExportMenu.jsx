@@ -5,8 +5,9 @@ import { getAtlasSize } from "../library/utils"
 import stylesX from "../pages/Save.module.css"
 import { local } from "../library/store"
 import { LanguageContext } from "../context/LanguageContext"
+import { v4 as uuidv4 } from 'uuid';
 
-const defaultName = "Anon"
+const defaultName = `${uuidv4()}`
 
 export const ExportMenu = () => {
   // Translate hook

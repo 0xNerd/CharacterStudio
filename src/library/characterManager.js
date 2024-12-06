@@ -306,9 +306,8 @@ export class CharacterManager {
             // Call the downloadVRMWithAvatar function with the required parameters
             const vrmBlob = await blobVRMWithAvatar(this.characterModel, this.avatar, name, finalOptions);
             const file = new File([vrmBlob], `${name}.vrm`, { type: "application/octet-stream" });
-            console.log('sending file to parent', file)
             // Send the file to the parent for uploading
-            const parentOrigin = window.parent.location.origin;
+            const parentOrigin = "https://aikotv.com";
             window.parent.postMessage({
               type: 'uploadVRM',
               data: { file }
