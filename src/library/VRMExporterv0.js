@@ -1035,8 +1035,8 @@ async function imageBitmap2ktx2(image) {
 
 function imageBitmap2png(image) {
     const canvas = document.createElement('canvas');
-    canvas.width = image.width;
-    canvas.height = image.height;
+    canvas.width = 500;
+    canvas.height = 500;
     canvas.getContext("2d").drawImage(image, 0, 0);
 
     // Convert canvas data to PNG format

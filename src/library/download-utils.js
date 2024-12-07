@@ -123,6 +123,7 @@ export async function downloadVRM(model,vrmData,fileName, options){
 
 export function downloadVRMWithAvatar(model, avatar, fileName, options){
   return new Promise(async (resolve, reject) => {
+
     const downloadFileName = `${
       fileName && fileName !== "" ? fileName : "AvatarCreatorModel"
     }`

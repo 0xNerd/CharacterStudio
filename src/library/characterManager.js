@@ -269,10 +269,10 @@ export class CharacterManager {
             exportOptions = exportOptions || {};
             const manifestOptions = this.manifestData.getExportOptions();
             const finalOptions = { ...manifestOptions, ...exportOptions };
-            finalOptions.screenshot = this._getPortaitScreenshotTexture(false, finalOptions);
-
+            const screenshot = this._getPortaitScreenshotTexture(false, finalOptions);
+            console.log('screenshot', screenshot);
             // Log the final export options
-            console.log(finalOptions);
+            console.log('finalOptions', finalOptions);
 
             // Call the downloadVRMWithAvatar function with the required parameters
             await downloadVRMWithAvatar(this.characterModel, this.avatar, name, finalOptions);
@@ -296,17 +296,6 @@ export class CharacterManager {
       return new Promise(async (resolve, reject) => {
         if (this.canDownload()) {
           try {
-            
-            // Set default export options if not provided
-            exportOptions = exportOptions || {};
-            const manifestOptions = this.manifestData.getExportOptions();
-            const finalOptions = { ...manifestOptions, ...exportOptions };
-            finalOptions.screenshot = this._getPortaitScreenshotTexture(false, finalOptions);
-
-            // Call the downloadVRMWithAvatar function with the required parameters
-            const vrmBlob = await blobVRMWithAvatar(this.characterModel, this.avatar, name, finalOptions);
-            const file = new File([vrmBlob], `${name}.vrm`, { type: "application/octet-stream" });
-            // Send the file to the parent for uploading
             const allowedOrigins = [
               "https://www.aikotv.com",
               "http://localhost:5173"
@@ -318,23 +307,69 @@ export class CharacterManager {
             const parentOrigin = allowedOrigins.includes(currentOrigin) 
               ? currentOrigin 
               : "https://www.aikotv.com"; // Default fallback
+
+            // Set default export options if not provided
+            exportOptions = exportOptions || {};
+            const manifestOptions = this.manifestData.getExportOptions();
+            const finalOptions = { ...manifestOptions, ...exportOptions };
+            finalOptions.screenshot = this._getPortaitScreenshotTexture(false, finalOptions);
+            const screenshot = this._getPortaitScreenshotTexture(true, finalOptions);
+            console.log('screenshot', screenshot);
+            // Call the downloadVRMWithAvatar function with the required parameters
+            const vrmBlob = await blobVRMWithAvatar(this.characterModel, this.avatar, name, finalOptions);
+            const vrmFile = new File([vrmBlob], `${name}.vrm`, { type: "application/octet-stream" });
+            const screenshotFile = new File([screenshot], `${name}.jpg`, { type: "image/jpeg" });
+            // send to the server
+            const formData = new FormData();
+            formData.append('vrmFile', vrmFile); // .vrm file
+            formData.append('imageFile', screenshotFile); // image file
+            // send to the server
+            const response = await axios.post('https://aiko-server-production-f541.up.railway.app/api/create/vrm', formData);
             
-            // Post the message
+            console.log('response from files sent', response);
+            if (response.status === 200) {
+              console.log('VRM uploaded successfully');
+              // Post the message
+              window.parent.postMessage(
+                {
+                  type: 'uploadVRM',
+                  success: true,
+                },
+                parentOrigin
+              );
+              resolve();
+            } else {
+              console.error('Failed to upload VRM');
+              window.parent.postMessage(
+                {
+                  type: 'uploadVRM',
+                  success: false,
+                },
+                parentOrigin
+              );
+              reject(new Error("Failed to upload VRM."));
+            }
+          } catch (error) {
+            console.error("Error processing VRM:", error.message);
             window.parent.postMessage(
               {
                 type: 'uploadVRM',
-                data: { file },
+                success: false,
               },
               parentOrigin
             );
-          
-          } catch (error) {
-            console.error("Error processing VRM:", error.message);
             reject(new Error("Failed to process VRM."));
           }
         } else {
           const errorMessage = "Download not supported.";
           console.error(errorMessage);
+          window.parent.postMessage(
+            {
+              type: 'uploadVRM',
+              success: false,
+            },
+            parentOrigin
+          );
           reject(new Error(errorMessage));
         }
       });
@@ -1194,7 +1229,7 @@ export class CharacterManager {
       localVector3.y += screenshotFaceOffset[1];
       localVector3.z += screenshotFaceOffset[2];
       
-      this.screenshotManager.setBackground(screenshotBackground);
+      this.screenshotManager.setBackgroundColor(0, 0, 0, 0);
       this.screenshotManager.cameraFrameManager.setCamera(localVector3, screenshotFaceDistance, screenshotFOV);
       const screenshot = getBlob ? 
         this.screenshotManager.getScreenshotBlob(width, height):
