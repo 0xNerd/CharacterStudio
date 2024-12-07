@@ -307,11 +307,26 @@ export class CharacterManager {
             const vrmBlob = await blobVRMWithAvatar(this.characterModel, this.avatar, name, finalOptions);
             const file = new File([vrmBlob], `${name}.vrm`, { type: "application/octet-stream" });
             // Send the file to the parent for uploading
-            const parentOrigin = "https://www.aikotv.com";
-            window.parent.postMessage({
-              type: 'uploadVRM',
-              data: { file }
-            }, parentOrigin);
+            const allowedOrigins = [
+              "https://www.aikotv.com",
+              "http://localhost:5173"
+            ];
+            
+            const currentOrigin = window.location.origin;
+            
+            // Validate or choose the appropriate origin
+            const parentOrigin = allowedOrigins.includes(currentOrigin) 
+              ? currentOrigin 
+              : "https://www.aikotv.com"; // Default fallback
+            
+            // Post the message
+            window.parent.postMessage(
+              {
+                type: 'uploadVRM',
+                data: { file },
+              },
+              parentOrigin
+            );
           
           } catch (error) {
             console.error("Error processing VRM:", error.message);
