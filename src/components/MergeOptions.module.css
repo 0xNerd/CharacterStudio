@@ -1,6 +1,6 @@
 .InformationContainerPos {
     position: fixed;
-    left: 32px;
+    left: 1rem;
     top: 98px;
     width:300px;
     height: -webkit-calc(100vh - 176px);
